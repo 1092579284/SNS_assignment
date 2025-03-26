@@ -7,3 +7,4 @@
 3. Run `server.py` to start the server.  
 
 4. Open 'index.html', wait for it to connect to the server, input the desired information, and obtain the prediction results.
+![image](https://github.com/user-attachments/assets/aa2a921c-c5b0-4367-847a-af7ea47e7882)
