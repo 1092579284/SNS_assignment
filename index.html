@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Prediction Oracle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c7fb8;
+            --accent-color: #ff7f0e;
+            --secondary-color: #2ca02c;
+            --tertiary-color: #d62728;
+            --quaternary-color: #9467bd;
+            --quinary-color: #8c564b;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --light-gray: #e9ecef;
+            --dark-gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .update-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .update-btn:hover {
+            background-color: #218838;
+        }
+        
+        .update-btn:disabled {
+            background-color: var(--dark-gray);
+            cursor: not-allowed;
+        }
+        
+        .loading-indicator {
+            display: none;
+            margin-left: 10px;
+            color: var(--dark-gray);
+        }
+        
+        .progress-container {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--secondary-color);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-align: center;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: 600px;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .cached-symbols {
+            margin-bottom: 20px;
+        }
+        
+        .symbol-item {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--light-gray);
+        }
+        
+        .symbol-name {
+            font-weight: 500;
+        }
+        
+        .add-symbol-container {
+            margin-top: 20px;
+        }
+        
+        .add-symbol-form {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .add-symbol-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        
+        .add-symbol-btn {
+            padding: 8px 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .chat-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            margin-left: auto;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            padding: 10px 15px;
+        }
+        
+        .bot-message {
+            background-color: var(--light-gray);
+            border-radius: 18px 18px 18px 0;
+            padding: 10px 15px;
+            white-space: pre-line;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: var(--light-gray);
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .chat-input button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .chat-input button:hover {
+            background-color: #1c6ea4;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .chart-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .feature-selector {
+            padding: 5px 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            background-color: white;
+            outline: none;
+        }
+        
+        .chart-area {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .stock-info {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+        }
+        
+        .feature-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .prediction-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .prediction-label {
+            color: var(--dark-gray);
+        }
+        
+        .prediction-value {
+            font-weight: 500;
+        }
+        
+        .lstm-prediction {
+            color: var(--primary-color);
+        }
+        
+        .rf-prediction {
+            color: var(--secondary-color);
+        }
+        
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .chart-type-selector {
+            padding: 5px 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            background-color: white;
+            outline: none;
+        }
+        
+        .expand-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .expand-btn:hover {
+            background-color: #1c6ea4;
+        }
+        
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .fullscreen-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .close-fullscreen {
+            background-color: var(--tertiary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .fullscreen-chart-container {
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 60px);
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 2fr;
+            }
+            
+            .sidebar {
+                grid-column: 1 / 2;
+                grid-row: 1 / 2;
+            }
+            
+            .chat-container {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+            }
+            
+            .chart-container {
+                grid-column: 2 / 3;
+                grid-row: 1 / 3;
+                height: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar,
+            .chat-container,
+            .chart-container {
+                grid-column: 1 / 2;
+                height: auto;
+                min-height: 400px;
+            }
+            
+            .sidebar {
+                grid-row: 1 / 2;
+            }
+            
+            .chat-container {
+                grid-row: 2 / 3;
+            }
+            
+            .chart-container {
+                grid-row: 3 / 4;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">Stock Prediction Oracle</div>
+            <div class="header-controls">
+                <div class="server-status-container" style="display: flex; align-items: center; margin-right: 15px;">
+                    <div id="server-status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background-color: #d62728; margin-right: 5px;"></div>
+                    <span id="server-status-text">Offline</span>
+                </div>
+                <span id="loading-indicator" class="loading-indicator">Updating...</span>
+                <div id="progress-container" class="progress-container">
+                    <div class="progress-bar">
+                        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">Preparing update...</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-header">Cached Symbols</div>
+                <div class="cached-symbols-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>Available Stocks</div>
+                    <button id="refresh-symbols-btn" class="update-btn">Refresh List</button>
+                </div>
+                <div id="cached-symbols" class="cached-symbols">
+                    <!-- Symbols will be populated here -->
+                </div>
+                <div class="update-all-container" style="margin-top: 20px;">
+                    <div class="sidebar-header">Update Data</div>
+                    <button id="update-all-btn" class="update-btn" style="width: 100%; margin-top: 10px;">Update All Data</button>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>Oracle Assistant</h2>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        Hello, I'm the Oracle. How can I help you today?
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="user-input" placeholder="Ask about stock prices..." autocomplete="off">
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 id="stock-symbol">Stock Forecast</h2>
+                    <div style="display: flex; align-items: center;">
+                        <select id="chart-type-selector" class="chart-type-selector">
+                            <option value="Close">Close</option>
+                            <option value="High">High</option>
+                            <option value="Low">Low</option>
+                            <option value="Open">Open</option>
+                            <option value="Volume">Volume</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="charts-area" class="chart-area">
+                    <!-- Charts will be populated here -->
+                </div>
+                <div id="predictions-container">
+                    <!-- Prediction info will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fullscreen chart overlay -->
+    <div id="fullscreen-overlay" class="fullscreen-overlay">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title" id="fullscreen-title">Stock Chart</div>
+            <button id="close-fullscreen" class="close-fullscreen">Close</button>
+        </div>
+        <div id="fullscreen-chart-container" class="fullscreen-chart-container"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+    <!-- Add adapter for Chart.js for Timeseries -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
+    <script>
+        let stockCharts = {};
+        let updateStatusInterval = null;
+        let currentSymbol = null;
+        let currentFeature = 'Close';
+        let currentChartType = 'line';
+        let fullscreenChart = null;
+        let currentFullscreenData = null;
+        let serverConnectionCheckInterval = null;
+        
+        // Initialize UI elements
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        document.getElementById('update-all-btn').addEventListener('click', updateAllData);
+        document.getElementById('refresh-symbols-btn').addEventListener('click', loadAvailableSymbols);
+        
+        document.getElementById('chart-type-selector').addEventListener('change', function() {
+            currentFeature = this.value;
+            currentChartType = 'line';
+            
+            if (currentSymbol) {
+                updateChartView(currentSymbol, currentFeature);
+            }
+        });
+        
+        document.getElementById('close-fullscreen').addEventListener('click', closeFullscreen);
+        
+        // Load available symbols on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadAvailableSymbols();
+            checkServerConnection();
+            
+            // Start periodic server connection check
+            serverConnectionCheckInterval = setInterval(checkServerConnection, 10000);
+        });
+        
+        function checkServerConnection() {
+            const statusIndicator = document.getElementById('server-status-indicator');
+            const statusText = document.getElementById('server-status-text');
+            
+            fetch('http://localhost:5001/symbols', { timeout: 5000 })
+                .then(response => {
+                    if (response.ok) {
+                        statusIndicator.style.backgroundColor = '#2ca02c'; // Green for connected
+                        statusText.textContent = 'Connected';
+                    } else {
+                        statusIndicator.style.backgroundColor = '#d62728'; // Red for error
+                        statusText.textContent = 'Connection Error';
+                    }
+                })
+                .catch(error => {
+                    console.error('Server connection error:', error);
+                    statusIndicator.style.backgroundColor = '#d62728'; // Red for disconnected
+                    statusText.textContent = 'Offline';
+                });
+        }
+        
+        function loadAvailableSymbols() {
+            fetch('http://localhost:5001/symbols')
+            .then(response => response.json())
+            .then(data => {
+                const symbolsContainer = document.getElementById('cached-symbols');
+                symbolsContainer.innerHTML = '';
+                
+                data.symbols.forEach(symbol => {
+                    addSymbolToSidebar(symbol);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading symbols:', error);
+            });
+        }
+        
+        function addSymbolToSidebar(symbol) {
+            const symbolsContainer = document.getElementById('cached-symbols');
+            
+            const symbolItem = document.createElement('div');
+            symbolItem.classList.add('symbol-item');
+            
+            const symbolName = document.createElement('div');
+            symbolName.classList.add('symbol-name');
+            symbolName.textContent = symbol;
+            
+            const updateBtn = document.createElement('button');
+            updateBtn.classList.add('update-btn');
+            updateBtn.textContent = 'Update';
+            updateBtn.addEventListener('click', function() {
+                updateSymbolData(symbol);
+            });
+            
+            symbolItem.appendChild(symbolName);
+            symbolItem.appendChild(updateBtn);
+            
+            // Add click event to select this symbol
+            symbolItem.addEventListener('click', function(e) {
+                if (e.target !== updateBtn) {
+                    selectSymbol(symbol);
+                }
+            });
+            
+            symbolsContainer.appendChild(symbolItem);
+        }
+        
+        function selectSymbol(symbol) {
+            currentSymbol = symbol;
+            document.getElementById('stock-symbol').textContent = `${symbol} Forecast`;
+            
+            // Update the chart view
+            updateChartView(symbol, currentFeature);
+        }
+        
+        function updateChartView(symbol, feature) {
+            // Show loading or placeholder
+            document.getElementById('charts-area').innerHTML = '<div style="text-align:center;padding:20px;">Loading chart data...</div>';
+            document.getElementById('predictions-container').innerHTML = '';
+            
+            // Request data for this symbol and feature
+            fetch(`http://localhost:5001/predict`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: `Show me ${symbol} ${feature}` }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('charts-area').innerHTML = `<div style="text-align:center;padding:20px;">Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                updateChart(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('charts-area').innerHTML = `<div style="text-align:center;padding:20px;">Failed to load chart data</div>`;
+            });
+        }
+        
+        function updateSymbolData(symbol) {
+            const updateBtn = document.getElementById('update-all-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const progressContainer = document.getElementById('progress-container');
+            
+            // Disable button and show loading indicators
+            updateBtn.disabled = true;
+            loadingIndicator.style.display = 'inline';
+            progressContainer.style.display = 'block';
+            
+            // Add system message
+            addMessage(`Updating data for ${symbol}. This may take a few minutes...`, 'bot');
+            
+            // Send update request for specific symbol
+            fetch('http://localhost:5001/update_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ symbol: symbol }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Start polling update status
+                startUpdateStatusPolling();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Reset button state and hide loading indicators
+                updateBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
+                progressContainer.style.display = 'none';
+                
+                addMessage('Error updating data. Please try again later.', 'bot');
+            });
+        }
+        
+        function updateAllData() {
+            const updateBtn = document.getElementById('update-all-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const progressContainer = document.getElementById('progress-container');
+            
+            // Disable button and show loading indicators
+            updateBtn.disabled = true;
+            loadingIndicator.style.display = 'inline';
+            progressContainer.style.display = 'block';
+            
+            // Add system message
+            addMessage('Starting data update. This may take a few minutes...', 'bot');
+            
+            // Send update data request
+            fetch('http://localhost:5001/update_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Start polling update status
+                startUpdateStatusPolling();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Reset button state and hide loading indicators
+                updateBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
+                progressContainer.style.display = 'none';
+                
+                addMessage('Error updating data. Please try again later.', 'bot');
+            });
+        }
+        
+        function startUpdateStatusPolling() {
+            // Clear previous polling
+            if (updateStatusInterval) {
+                clearInterval(updateStatusInterval);
+            }
+            
+            // Poll update status every second
+            updateStatusInterval = setInterval(() => {
+                fetch('http://localhost:5001/update_status')
+                .then(response => response.json())
+                .then(status => {
+                    updateProgressUI(status);
+                    
+                    // If update complete or error, stop polling
+                    if (status.step === 'complete' || status.step === 'error') {
+                        clearInterval(updateStatusInterval);
+                        
+                        const updateBtn = document.getElementById('update-all-btn');
+                        const loadingIndicator = document.getElementById('loading-indicator');
+                        
+                        // Reset button state
+                        updateBtn.disabled = false;
+                        loadingIndicator.style.display = 'none';
+                        
+                        // Show result message
+                        if (status.step === 'complete') {
+                            addMessage('Data and models successfully updated! You can now query for the latest predictions.', 'bot');
+                            // Refresh available symbols
+                            loadAvailableSymbols();
+                        } else {
+                            addMessage(`Update failed: ${status.message}`, 'bot');
+                        }
+                        
+                        // Hide progress bar after 3 seconds
+                        setTimeout(() => {
+                            document.getElementById('progress-container').style.display = 'none';
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching update status:', error);
+                });
+            }, 1000);
+        }
+        
+        function updateProgressUI(status) {
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            // Update progress bar
+            progressBarFill.style.width = `${status.progress}%`;
+            
+            // Update status text
+            progressText.textContent = status.message;
+            
+            // Add new status to chat if different
+            if (status.step && status.step !== 'start' && status.message) {
+                const lastMessage = document.querySelector('.chat-messages .message:last-child');
+                if (lastMessage && lastMessage.textContent !== status.message) {
+                    addMessage(status.message, 'bot');
+                }
+            }
+        }
+        
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+            
+            // Add user message to chat
+            addMessage(userInput, 'user');
+            document.getElementById('user-input').value = '';
+            
+            // Send request to server
+            fetch('http://localhost:5001/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: userInput }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Add bot reply
+                if (data.error) {
+                    if (data.error.includes('Unsupported symbol') || data.error.includes('valid company/symbol')) {
+                        addMessage("I don't recognize that stock symbol. Please add it in the sidebar or try one of the available symbols.", 'bot');
+                    } else {
+                        addMessage(data.error, 'bot');
+                    }
+                    return;
+                }
+                
+                addMessage(data.message, 'bot');
+                
+                // Update chart and current symbol
+                if (data.symbol) {
+                    currentSymbol = data.symbol;
+                    // If a specific feature was requested, switch to it
+                    if (data.feature) {
+                        currentFeature = data.feature;
+                        document.getElementById('feature-selector').value = currentFeature;
+                    }
+                    updateChart(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addMessage('Sorry, an error occurred while processing your request. Please try again.', 'bot');
+            });
+        }
+        
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function updateChart(data) {
+            // Clear existing charts
+            document.getElementById('charts-area').innerHTML = '';
+            document.getElementById('predictions-container').innerHTML = '';
+            
+            // Update the stock symbol title
+            document.getElementById('stock-symbol').textContent = `${data.symbol} Forecast`;
+            
+            if (!data.plot_data || !data.plot_data.features) {
+                return;
+            }
+            
+            // Extract all features from the data
+            const features = Object.keys(data.plot_data.features);
+            
+            if (features.includes(currentFeature)) {
+                // Create line chart for selected feature
+                createFeatureChart(data.symbol, currentFeature, data.plot_data);
+            } else if (features.length > 0) {
+                // Fallback to first available feature
+                currentFeature = features[0];
+                document.getElementById('chart-type-selector').value = currentFeature;
+                createFeatureChart(data.symbol, currentFeature, data.plot_data);
+            }
+        }
+        
+        function createFeatureChart(symbol, feature, plotData) {
+            const featureData = plotData.features[feature];
+            if (!featureData) return;
+            
+            // Create chart container
+            const chartContainer = document.createElement('div');
+            chartContainer.classList.add('chart-wrapper');
+            chartContainer.id = `chart-container-${feature}`;
+            
+            // Add chart controls
+            const chartControls = document.createElement('div');
+            chartControls.classList.add('chart-controls');
+            
+            const chartTitle = document.createElement('h3');
+            chartTitle.textContent = `${feature} Price`;
+            chartTitle.style.marginBottom = '0';
+            chartControls.appendChild(chartTitle);
+            
+            const expandBtn = document.createElement('button');
+            expandBtn.classList.add('expand-btn');
+            expandBtn.innerHTML = 'Expand <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+            expandBtn.onclick = function() {
+                openFullscreen(symbol, feature, plotData);
+            };
+            chartControls.appendChild(expandBtn);
+            
+            chartContainer.appendChild(chartControls);
+            
+            const canvas = document.createElement('canvas');
+            canvas.id = `chart-${feature}`;
+            
+            chartContainer.appendChild(canvas);
+            
+            document.getElementById('charts-area').appendChild(chartContainer);
+            
+            // Create prediction info
+            createPredictionInfo(symbol, feature, featureData, plotData.dates);
+            
+            // Prepare chart data
+            const ctx = canvas.getContext('2d');
+            
+            // Destroy existing chart if any
+            if (stockCharts[feature]) {
+                stockCharts[feature].destroy();
+            }
+            
+            // Prepare data
+            const history = featureData.history;
+            const lstm_predictions = featureData.lstm_predictions || [];
+            const rf_predictions = featureData.rf_predictions || [];
+            
+            // Create datasets for each data source
+            const datasets = [
+                {
+                    label: 'History',
+                    data: history,
+                    borderColor: 'rgb(44, 127, 184)',
+                    backgroundColor: 'rgba(44, 127, 184, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 0
+                }
+            ];
+            
+            // Add LSTM prediction dataset if available
+            if (lstm_predictions && lstm_predictions.length > 0) {
+                // Create a dataset that includes the last point of history and the predictions
+                const lstmData = Array(history.length - 1).fill(null);
+                lstmData.push(history[history.length - 1]); // Last historical point
+                
+                // Add prediction points
+                for (const pred of lstm_predictions) {
+                    lstmData.push(pred);
+                }
+                
+                datasets.push({
+                    label: 'LSTM Prediction',
+                    data: lstmData,
+                    borderColor: 'rgb(255, 127, 14)',
+                    backgroundColor: 'rgba(255, 127, 14, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 3
+                });
+            }
+            
+            // Add RF prediction dataset if available
+            if (rf_predictions && rf_predictions.length > 0) {
+                // Create a dataset that includes the last point of history and the predictions
+                const rfData = Array(history.length - 1).fill(null);
+                rfData.push(history[history.length - 1]); // Last historical point
+                
+                // Add prediction points
+                for (const pred of rf_predictions) {
+                    rfData.push(pred);
+                }
+                
+                datasets.push({
+                    label: 'Random Forest Prediction',
+                    data: rfData,
+                    borderColor: 'rgb(44, 160, 44)',
+                    backgroundColor: 'rgba(44, 160, 44, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 3
+                });
+            }
+            
+            // Create chart
+            stockCharts[feature] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: plotData.dates,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function openFullscreen(symbol, feature, plotData) {
+            const overlay = document.getElementById('fullscreen-overlay');
+            const container = document.getElementById('fullscreen-chart-container');
+            const title = document.getElementById('fullscreen-title');
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Set title
+            title.textContent = `${symbol} ${feature} Chart`;
+            
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.id = 'fullscreen-chart';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            container.appendChild(canvas);
+            
+            // Show overlay
+            overlay.style.display = 'flex';
+            
+            // Save the original data for the chart
+            currentFullscreenData = {
+                symbol: symbol,
+                feature: feature,
+                plotData: plotData
+            };
+            
+            // Draw chart
+            drawFullscreenFeatureChart(symbol, feature, plotData.features[feature], plotData.dates);
+        }
+        
+        function closeFullscreen() {
+            const overlay = document.getElementById('fullscreen-overlay');
+            overlay.style.display = 'none';
+            
+            if (fullscreenChart) {
+                fullscreenChart.destroy();
+                fullscreenChart = null;
+            }
+        }
+        
+        function drawFullscreenFeatureChart(symbol, feature, featureData, dates) {
+            // Prepare chart data
+            const ctx = document.getElementById('fullscreen-chart').getContext('2d');
+            
+            // Destroy existing chart if any
+            if (fullscreenChart) {
+                fullscreenChart.destroy();
+            }
+            
+            // Prepare data
+            const history = featureData.history;
+            const lstm_predictions = featureData.lstm_predictions || [];
+            const rf_predictions = featureData.rf_predictions || [];
+            
+            // Create datasets
+            const datasets = [
+                {
+                    label: 'History',
+                    data: history,
+                    borderColor: 'rgb(44, 127, 184)',
+                    backgroundColor: 'rgba(44, 127, 184, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 0
+                }
+            ];
+            
+            // Add LSTM prediction dataset if available
+            if (lstm_predictions && lstm_predictions.length > 0) {
+                // Create a dataset that includes the last point of history and the predictions
+                const lstmData = Array(history.length - 1).fill(null);
+                lstmData.push(history[history.length - 1]); // Last historical point
+                
+                // Add prediction points
+                for (const pred of lstm_predictions) {
+                    lstmData.push(pred);
+                }
+                
+                datasets.push({
+                    label: 'LSTM Prediction',
+                    data: lstmData,
+                    borderColor: 'rgb(255, 127, 14)',
+                    backgroundColor: 'rgba(255, 127, 14, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 3
+                });
+            }
+            
+            // Add RF prediction dataset if available
+            if (rf_predictions && rf_predictions.length > 0) {
+                // Create a dataset that includes the last point of history and the predictions
+                const rfData = Array(history.length - 1).fill(null);
+                rfData.push(history[history.length - 1]); // Last historical point
+                
+                // Add prediction points
+                for (const pred of rf_predictions) {
+                    rfData.push(pred);
+                }
+                
+                datasets.push({
+                    label: 'Random Forest Prediction',
+                    data: rfData,
+                    borderColor: 'rgb(44, 160, 44)',
+                    backgroundColor: 'rgba(44, 160, 44, 0.1)',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 3
+                });
+            }
+            
+            // Create chart
+            fullscreenChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createPredictionInfo(symbol, feature, featureData, dates) {
+            const predictionsContainer = document.getElementById('predictions-container');
+            
+            const featureInfo = document.createElement('div');
+            featureInfo.classList.add('stock-info');
+            
+            const featureName = document.createElement('div');
+            featureName.classList.add('feature-name');
+            featureName.textContent = `${feature} Predictions`;
+            
+            featureInfo.appendChild(featureName);
+            
+            // Add predictions for next 3 days
+            const lstm_predictions = featureData.lstm_predictions || [];
+            const rf_predictions = featureData.rf_predictions || [];
+            
+            // Only add if we have future dates
+            if (dates.length > 30) {
+                for (let i = 0; i < 3 && i < lstm_predictions.length; i++) {
+                    const predictionRow = document.createElement('div');
+                    predictionRow.classList.add('prediction-row');
+                    
+                    const dateLabel = document.createElement('div');
+                    dateLabel.classList.add('prediction-label');
+                    dateLabel.textContent = dates[30 + i]; // 30 days of history + future days
+                    
+                    predictionRow.appendChild(dateLabel);
+                    
+                    // If we have predictions for this day
+                    if (lstm_predictions[i] !== undefined || rf_predictions[i] !== undefined) {
+                        const predictionsDiv = document.createElement('div');
+                        
+                        if (lstm_predictions[i] !== undefined) {
+                            const lstmValue = document.createElement('span');
+                            lstmValue.classList.add('prediction-value', 'lstm-prediction');
+                            lstmValue.textContent = `LSTM: $${lstm_predictions[i].toFixed(2)}`;
+                            predictionsDiv.appendChild(lstmValue);
+                        }
+                        
+                        if (lstm_predictions[i] !== undefined && rf_predictions[i] !== undefined) {
+                            predictionsDiv.appendChild(document.createTextNode(' | '));
+                        }
+                        
+                        if (rf_predictions[i] !== undefined) {
+                            const rfValue = document.createElement('span');
+                            rfValue.classList.add('prediction-value', 'rf-prediction');
+                            rfValue.textContent = `RF: $${rf_predictions[i].toFixed(2)}`;
+                            predictionsDiv.appendChild(rfValue);
+                        }
+                        
+                        predictionRow.appendChild(predictionsDiv);
+                    } else {
+                        const noValue = document.createElement('div');
+                        noValue.textContent = 'No prediction available';
+                        predictionRow.appendChild(noValue);
+                    }
+                    
+                    featureInfo.appendChild(predictionRow);
+                }
+            }
+            
+            predictionsContainer.appendChild(featureInfo);
+        }
+    </script>
+</body>
+</html>
