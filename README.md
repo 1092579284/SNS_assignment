@@ -2,7 +2,7 @@
 
 1. Run `data_preparation.py` to automatically download stock datasets for Apple (AAPL) and Microsoft (MSFT).  
 
-2. Run `train_model.py` to train the model and save it.  
+2. Run `train_model.py` and `train_model_rf.py` to train the model and save it.  
 
 3. Run `server.py` to start the server.  
 
